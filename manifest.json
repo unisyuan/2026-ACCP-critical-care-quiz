@@ -1,0 +1,18 @@
+{
+  "name": "ACCP 重症藥學 150 題複習題庫",
+  "short_name": "重症藥學題庫",
+  "description": "2026 ACCP/ASHP Critical Care Pharmacy Specialty Review 150 題中文繁體複習測驗系統",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>2026 ACCP/ASHP 重症藥學 150 題 複習測驗系統</title>
+  <meta name="description" content="2026 ACCP/ASHP Critical Care Pharmacy Specialty Review 150 題中文繁體複習系統，支援隨機出題、錯題複習、章節專項與共用病例展示。">
+  <meta name="theme-color" content="#0284c7">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">Rx</div>
+        <div class="brand-text">
+          <h1>ACCP 重症藥學 150 題</h1>
+          <span>2026 中文繁體版・題庫解析</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnSearch" class="icon-btn" title="搜尋題目與縮寫">🔍</button>
+        <button id="btnGrid" class="icon-btn" title="題號選單 (1-150)">🔢</button>
+        <button id="btnTheme" class="icon-btn" title="深色/淺色模式">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Desktop Tabs Navigation -->
+  <nav class="nav-tabs">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-view="practice" data-mode="all">📋 完整題庫 (1–150)</button>
+      <button class="tab-btn" data-view="random-hub">🎲 隨機出題</button>
+      <button class="tab-btn" data-view="mistakes-hub">
+        ❌ 錯題本 <span id="badgeMistakesTab" class="badge" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" data-view="starred-hub">
+        ⭐ 我的收藏 <span id="badgeStarredTab" class="badge warning" style="display:none">0</span>
+      </button>
+      <button class="tab-btn" data-view="stats">📊 學習進度與統計</button>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+
+    <!-- VIEW 1: Practice / Question Card (Used for All, Random, Mistakes, Starred) -->
+    <div id="viewPractice" class="view-panel active">
+      
+      <!-- Quiz Status / Header Banner (Only shown in Random or Exam Mode) -->
+      <div id="examModeBanner" class="card" style="display:none; padding:12px 16px; margin-bottom:12px; background:var(--primary-light); border-color:var(--primary);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-weight:700; color:var(--primary-dark);" id="examModeTitle">🎲 隨機測驗中 (20 題)</div>
+          <button id="btnFinishExam" class="btn btn-primary" style="padding:6px 14px; font-size:13px;">完成交卷</button>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="card" id="questionCard">
+        
+        <!-- Meta Bar -->
+        <div class="q-meta-bar">
+          <div class="q-category-tag" id="qCategory">實務標準、訓練與專業發展</div>
+          <div class="q-indicator">
+            <span id="qNumberText">第 1 題</span>
+            <span style="font-size:12px; font-weight:normal; color:var(--text-muted);" id="qTotalText">/ 150</span>
+          </div>
+          <div class="q-tools">
+            <button id="btnStarCurrent" class="star-btn" title="加入收藏">★</button>
+          </div>
+        </div>
+
+        <!-- Shared Case Alert Box (if applicable) -->
+        <div id="sharedCaseBox" class="shared-case-box" style="display:none;">
+          <div class="shared-case-title">
+            <span>🏥</span> <span id="sharedCaseLabel">共用病例</span>
+          </div>
+          <div id="sharedCaseText"></div>
+        </div>
+
+        <!-- Question Body -->
+        <div class="question-title" id="questionText">題目加載中...</div>
+
+        <!-- Options Container -->
+        <div class="options-list" id="optionsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Action Controls Bar -->
+        <div class="controls-bar">
+          <button id="btnPrev" class="btn btn-secondary">← 上一題</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btnToggleExp" class="btn btn-outline">💡 查看解析</button>
+            <button id="btnRemoveMistake" class="btn btn-secondary" style="display:none;">✓ 移出錯題本</button>
+          </div>
+          <button id="btnNext" class="btn btn-primary">下一題 →</button>
+        </div>
+
+        <!-- Explanation & Reference Box -->
+        <div id="explanationBox" class="explanation-box">
+          <div class="explanation-header">
+            <h3>📖 解答與解析</h3>
+            <div id="answerStatusBadge" class="status-badge status-correct">答對</div>
+          </div>
+          
+          <div style="font-weight:700; margin-bottom:8px; color:var(--primary);" id="correctAnswerText">
+            正確答案：D
+          </div>
+          
+          <div class="explanation-content" id="explanationText">
+            解析內容...
+          </div>
+
+          <div id="notesBox" class="notes-box" style="display:none;">
+            <strong>📌 核對註：</strong><span id="notesText"></span>
+          </div>
+
+          <div id="basisTag" class="basis-tag" style="display:none;">
+            <strong>依據：</strong><span id="basisText"></span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: Random Quiz Setup Hub -->
+    <div id="viewRandomHub" class="view-panel">
+      <div class="card">
+        <h2 style="font-size:18px; margin-bottom:12px; font-weight:700;">🎲 隨機出題模擬測驗</h2>
+        <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">
+          系統將自 150 題重症藥學題庫中隨機抽題。你可以選擇即時看解析以利學習，或使用模擬考交卷模式測試實力。
+        </p>
+
+        <h3 style="font-size:15px; margin-bottom:10px; font-weight:600;">選擇題數</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:10px; margin-bottom:20px;">
+          <button class="btn btn-secondary btn-preset-count active" data-count="10">⚡ 10 題 (快速)</button>
+          <button class="btn btn-secondary btn-preset-count" data-count="25">🎯 25 題 (標準)</button>
+          <button class="btn btn-secondary btn-preset-count" data-count="50">📚 50 題 (深度)</button>
+          <button class="btn btn-secondary btn-preset-count" data-count="150">🏆 全部 150 題</button>
+        </div>
+
+        <h3 style="font-size:15px; margin-bottom:10px; font-weight:600;">測驗模式</h3>
+        <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
+            <input type="radio" name="randomModeType" value="instant" checked>
+            <span>💡 <strong>即時解析模式</strong>（每題作答後即刻顯示對錯與解析）</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:14px;">
+            <input type="radio" name="randomModeType" value="exam">
+            <span>📝 <strong>全真考試模式</strong>（做完後點交卷，統整成績與錯題）</span>
+          </label>
+        </div>
+
+        <h3 style="font-size:15px; margin-bottom:10px; font-weight:600;">指定章節範圍（可選）</h3>
+        <div style="margin-bottom:20px;">
+          <select id="selectRandomChapter" class="search-input" style="padding-left:14px;">
+            <option value="ALL">全部 20 大主題章節</option>
+          </select>
+        </div>
+
+        <button id="btnStartRandomQuiz" class="btn btn-primary" style="width:100%; padding:14px; font-size:16px;">
+          🚀 開始隨機測驗
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 3: Mistakes Notebook Hub -->
+    <div id="viewMistakesHub" class="view-panel">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:700;">❌ 錯題複習專區</h2>
+            <p style="color:var(--text-muted); font-size:13px;">做錯的題目會自動記錄於此，答對後可自由移出或保留。</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="btnStartMistakesQuiz" class="btn btn-primary">🚀 刷錯題本</button>
+            <button id="btnClearMistakes" class="btn btn-danger" style="font-size:13px;">🧹 清空錯題</button>
+          </div>
+        </div>
+
+        <div id="mistakesStatsInfo" style="font-size:14px; color:var(--text-muted); margin-bottom:14px;">
+          目前錯題數量：<strong id="mistakesCountLabel" style="color:var(--danger);">0</strong> 題
+        </div>
+
+        <div id="mistakesListContainer" class="cat-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: Starred Hub -->
+    <div id="viewStarredHub" class="view-panel">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:18px; font-weight:700;">⭐ 我的收藏題本</h2>
+            <p style="color:var(--text-muted); font-size:13px;">在題目點擊 ★ 即可加入收藏，方便重點複習。</p>
+          </div>
+          <button id="btnStartStarredQuiz" class="btn btn-primary">🚀 測驗收藏題目</button>
+        </div>
+
+        <div id="starredListContainer" class="cat-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 5: Stats & Settings -->
+    <div id="viewStats" class="view-panel">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statAnswered">0</div>
+          <div class="stat-label">已作答題數</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAccuracy">0%</div>
+          <div class="stat-label">整體答對率</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statMistakes" style="color:var(--danger);">0</div>
+          <div class="stat-label">累積錯題數</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statStarred" style="color:var(--warning);">0</div>
+          <div class="stat-label">收藏題目數</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:16px; margin-bottom:14px; font-weight:700;">📑 各章節掌握度分析</h3>
+        <div id="chapterProgressList" style="display:flex; flex-direction:column; gap:12px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:16px; margin-bottom:14px; font-weight:700;">⚙️ 學習資料備份與還原</h3>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
+          可將目前在電腦上的作答進度與錯題本匯出為檔案，並傳送至手機中匯入，達成跨裝置同步複習！
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="btnExportData" class="btn btn-secondary">📤 匯出學習進度 (JSON)</button>
+          <label class="btn btn-secondary" style="margin:0; cursor:pointer;">
+            📥 匯入學習進度
+            <input type="file" id="inputImportData" accept=".json" style="display:none;">
+          </label>
+          <button id="btnResetAll" class="btn btn-danger">⚠️ 重置所有紀錄</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="bottom-tab-btn active" data-view="practice" data-mode="all">
+      <span class="tab-icon">📋</span>
+      <span>題庫</span>
+    </button>
+    <button class="bottom-tab-btn" data-view="random-hub">
+      <span class="tab-icon">🎲</span>
+      <span>隨機</span>
+    </button>
+    <button class="bottom-tab-btn" data-view="mistakes-hub">
+      <span class="tab-icon">❌</span>
+      <span>錯題</span>
+      <span id="badgeMistakesMobile" class="badge" style="display:none">0</span>
+    </button>
+    <button class="bottom-tab-btn" data-view="starred-hub">
+      <span class="tab-icon">⭐</span>
+      <span>收藏</span>
+      <span id="badgeStarredMobile" class="badge warning" style="display:none">0</span>
+    </button>
+    <button class="bottom-tab-btn" data-view="stats">
+      <span class="tab-icon">📊</span>
+      <span>統計</span>
+    </button>
+  </nav>
+
+  <!-- Modal 1: Question Navigator Grid (1~150) -->
+  <div id="modalGrid" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔢 快速跳題 (1–150 題)</h2>
+        <button class="icon-btn close-modal" style="border:none;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--border);"></div> 未作答</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> 答對</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> 答錯</div>
+          <div class="legend-item"><span style="color:#f59e0b;">★</span> 已收藏</div>
+        </div>
+        <div class="q-grid" id="questionGridContainer">
+          <!-- 150 buttons generated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Search & Medical Abbreviations -->
+  <div id="modalSearch" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔍 題目搜尋與醫學縮寫對照</h2>
+        <button class="icon-btn close-modal" style="border:none;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="輸入關鍵字 (如: ECMO, heparin, 敗血性休克, P/F比...)">
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+          <button id="searchFilterAll" class="btn btn-secondary active" style="font-size:12px; padding:6px 12px;">題庫搜尋 (<span id="searchResultCount">0</span>)</button>
+          <button id="searchFilterAbbr" class="btn btn-secondary" style="font-size:12px; padding:6px 12px;">常用縮寫表 (ICU, PaO2...)</button>
+        </div>
+
+        <!-- Search Results list -->
+        <div id="searchResultsList" class="cat-list">
+          <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">
+            請在上方輸入想尋找的藥名、病名或數值
+          </div>
+        </div>
+
+        <!-- Abbreviations Panel (Hidden by default) -->
+        <div id="abbrListPanel" style="display:none; font-size:13.5px; line-height:1.8;">
+          <!-- Loaded from reference.json -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Exam Score Result Modal -->
+  <div id="modalExamResult" class="modal-overlay">
+    <div class="modal-content" style="max-width:480px; text-align:center;">
+      <div class="modal-header">
+        <h2 style="width:100%;">🏁 測驗成績單</h2>
+      </div>
+      <div class="modal-body" style="padding:24px 18px;">
+        <div style="font-size:54px; margin-bottom:10px;" id="examResultEmoji">🎉</div>
+        <div style="font-size:28px; font-weight:800; color:var(--primary);" id="examScoreText">85 分</div>
+        <div style="font-size:14px; color:var(--text-muted); margin-bottom:20px;" id="examDetailText">
+          共 20 題，答對 17 題，答錯 3 題
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <button id="btnReviewExamMistakes" class="btn btn-danger" style="display:none;">❌ 複習本次錯題</button>
+          <button id="btnCloseExamModal" class="btn btn-primary">返回題庫</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">提示訊息</div>
+
+  <!-- Scripts -->
+  <script src="questions-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
