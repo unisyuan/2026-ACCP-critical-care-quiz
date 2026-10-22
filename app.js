@@ -91,6 +91,9 @@
   const notesText = document.getElementById('notesText');
   const basisTag = document.getElementById('basisTag');
   const basisText = document.getElementById('basisText');
+  const officialEnDetails = document.getElementById('officialEnDetails');
+  const officialEnText = document.getElementById('officialEnText');
+  const officialRefText = document.getElementById('officialRefText');
 
   // Controls
   const btnPrev = document.getElementById('btnPrev');
@@ -348,6 +351,14 @@
       basisText.textContent = q.basis;
     } else {
       basisTag.style.display = 'none';
+    }
+
+    if (q.official_rationale_en && q.official_rationale_en.trim()) {
+      officialEnDetails.style.display = 'block';
+      officialEnText.textContent = q.official_rationale_en;
+      officialRefText.textContent = q.official_references ? `文獻出處 (References): ${q.official_references}` : '';
+    } else {
+      officialEnDetails.style.display = 'none';
     }
   }
 
