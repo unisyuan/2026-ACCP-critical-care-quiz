@@ -103,33 +103,34 @@
         <!-- Explanation & Reference Box -->
         <div id="explanationBox" class="explanation-box">
           <div class="explanation-header">
-            <h3>📖 解答與解析</h3>
+            <h3>📖 解答與官方解析</h3>
             <div id="answerStatusBadge" class="status-badge status-correct">答對</div>
           </div>
           
-          <div style="font-weight:700; margin-bottom:8px; color:var(--primary);" id="correctAnswerText">
+          <div style="font-weight:700; margin-bottom:10px; color:var(--primary); font-size:15px;" id="correctAnswerText">
             正確答案：D
           </div>
-          
-          <div class="explanation-content" id="explanationText">
-            解析內容...
+
+          <!-- Language Switcher Bar -->
+          <div class="lang-switcher-bar">
+            <span style="font-size:12px; font-weight:700; color:var(--primary-dark);">🌐 官方解析語言：</span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-lang active" data-lang="bilingual">中英對照</button>
+              <button type="button" class="btn-lang" data-lang="zh">僅中文</button>
+              <button type="button" class="btn-lang" data-lang="en">僅英文</button>
+            </div>
           </div>
+          
+          <!-- Dynamic Content Container -->
+          <div id="explanationContent" style="margin-bottom:12px;"></div>
 
           <div id="notesBox" class="notes-box" style="display:none;">
-            <strong>📌 核對註：</strong><span id="notesText"></span>
+            <strong>📌 考點核對註：</strong><span id="notesText"></span>
           </div>
 
-          <div id="basisTag" class="basis-tag" style="display:none;">
-            <strong>依據：</strong><span id="basisText"></span>
+          <div id="officialRefBox" class="notes-box" style="display:none; border-left-color:var(--primary); background:rgba(2, 132, 199, 0.04); margin-top:8px;">
+            <strong>📚 官方參考文獻 (References)：</strong><div id="officialRefText" style="margin-top:4px; font-size:12.5px; line-height:1.6;"></div>
           </div>
-
-          <details id="officialEnDetails" style="margin-top:14px; border:1px dashed var(--border); border-radius:8px; padding:10px 14px; background:var(--card-bg);">
-            <summary style="cursor:pointer; font-size:13px; font-weight:700; color:var(--primary); user-select:none;">
-              🌐 ACCP 官方英文原文解析與文獻出處 (Official Rationale &amp; References)
-            </summary>
-            <div style="margin-top:10px; font-size:13px; line-height:1.6; color:var(--text-main);" id="officialEnText"></div>
-            <div style="margin-top:8px; font-size:12px; color:var(--text-muted); border-top:1px solid var(--border); padding-top:6px;" id="officialRefText"></div>
-          </details>
         </div>
 
       </div>

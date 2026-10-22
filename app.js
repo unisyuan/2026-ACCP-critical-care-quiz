@@ -34,6 +34,7 @@
     mistakes: [],      // array of qId
     starred: [],       // array of qId
     theme: 'light',
+    langMode: 'bilingual',
     lastVisitedId: 1
   };
 
@@ -86,13 +87,10 @@
   const explanationBox = document.getElementById('explanationBox');
   const answerStatusBadge = document.getElementById('answerStatusBadge');
   const correctAnswerText = document.getElementById('correctAnswerText');
-  const explanationText = document.getElementById('explanationText');
+  const explanationContent = document.getElementById('explanationContent');
   const notesBox = document.getElementById('notesBox');
   const notesText = document.getElementById('notesText');
-  const basisTag = document.getElementById('basisTag');
-  const basisText = document.getElementById('basisText');
-  const officialEnDetails = document.getElementById('officialEnDetails');
-  const officialEnText = document.getElementById('officialEnText');
+  const officialRefBox = document.getElementById('officialRefBox');
   const officialRefText = document.getElementById('officialRefText');
 
   // Controls
@@ -336,8 +334,45 @@
       answerStatusBadge.textContent = '參考解答';
     }
 
-    correctAnswerText.textContent = `正確解答：${q.answer_text || q.answer_letter}`;
-    explanationText.textContent = q.explanation || '無特別解析說明。';
+    correctAnswerText.textContent = `正確解答：${q.answer_letter} — ${q.answer_text || ''}`;
+
+    // Update active state of language switcher buttons
+    document.querySelectorAll('.btn-lang').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === (state.langMode || 'bilingual'));
+    });
+
+    const zhText = q.official_rationale_zh || q.explanation || '無特別解析說明。';
+    const enText = q.official_rationale_en || 'Official rationale unavailable.';
+    const currentLang = state.langMode || 'bilingual';
+
+    if (currentLang === 'bilingual') {
+      explanationContent.innerHTML = `
+        <div class="bilingual-container">
+          <div class="bilingual-card zh">
+            <div class="bilingual-tag">🇹🇼 ACCP 官方中文翻譯解析</div>
+            <div>${zhText}</div>
+          </div>
+          <div class="bilingual-card en">
+            <div class="bilingual-tag">🇺🇸 ACCP Official English Rationale (原文)</div>
+            <div>${enText}</div>
+          </div>
+        </div>
+      `;
+    } else if (currentLang === 'zh') {
+      explanationContent.innerHTML = `
+        <div class="bilingual-card zh">
+          <div class="bilingual-tag">🇹🇼 ACCP 官方中文翻譯解析</div>
+          <div>${zhText}</div>
+        </div>
+      `;
+    } else if (currentLang === 'en') {
+      explanationContent.innerHTML = `
+        <div class="bilingual-card en">
+          <div class="bilingual-tag">🇺🇸 ACCP Official English Rationale (原文)</div>
+          <div>${enText}</div>
+        </div>
+      `;
+    }
 
     if (q.notes && q.notes.trim()) {
       notesBox.style.display = 'block';
@@ -346,19 +381,11 @@
       notesBox.style.display = 'none';
     }
 
-    if (q.basis && q.basis.trim()) {
-      basisTag.style.display = 'block';
-      basisText.textContent = q.basis;
+    if (q.official_references && q.official_references.trim()) {
+      officialRefBox.style.display = 'block';
+      officialRefText.textContent = q.official_references;
     } else {
-      basisTag.style.display = 'none';
-    }
-
-    if (q.official_rationale_en && q.official_rationale_en.trim()) {
-      officialEnDetails.style.display = 'block';
-      officialEnText.textContent = q.official_rationale_en;
-      officialRefText.textContent = q.official_references ? `文獻出處 (References): ${q.official_references}` : '';
-    } else {
-      officialEnDetails.style.display = 'none';
+      officialRefBox.style.display = 'none';
     }
   }
 
@@ -414,6 +441,22 @@
       btnRemoveMistake.style.display = 'none';
       showToast('已從錯題本中移除！');
     }
+  });
+
+  // Language Mode Switcher (Bilingual / Chinese / English)
+  document.querySelectorAll('.btn-lang').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.langMode = btn.dataset.lang;
+      saveState();
+      const q = activeQueue[currentIndex];
+      if (q) {
+        const userChoice = examModeType === 'exam' && !isExamSubmitted 
+          ? null 
+          : (state.answers[q.id]?.selected || (examModeType === 'exam' && isExamSubmitted ? examAnswers[q.id] : null));
+        renderExplanationBox(q, userChoice);
+      }
+    });
   });
 
   // 8. Random Quiz Hub
