@@ -1,4 +1,4 @@
-const CACHE_NAME = 'accp-quiz-v1';
+const CACHE_NAME = 'accp-quiz-v2-terminology';
 const ASSETS = [
   './',
   './index.html',
@@ -36,3 +36,4 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
